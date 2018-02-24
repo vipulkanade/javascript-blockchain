@@ -8,7 +8,6 @@ class Transactions {
     }
 }
 
-
 /**
   // Block class
   // Creating an empty Block constructor with following variables:
@@ -126,19 +125,3 @@ console.log('\n Starting the miner again....');
 vipCoin.minePendingTrasactions('batman-address');
 
 console.log('\nBalance of Batman is', vipCoin.getBalanceOfAddress('batman-address'));
-
-
-
-// console.log("Mining Block 1....");
-// vipCoin.addBlock(new Block(1, "02/20/2018", {amount: 4}));
-//
-// console.log("Mining Block 2....");
-// vipCoin.addBlock(new Block(2, "02/22/2018", {amount: 10}));
-
-// console.log('Is blockchain valid? ' + vipCoin.isChainValid());
-//
-// vipCoin.chain[1].transactions = { amount : 100 };
-// vipCoin.chain[1].hash = vipCoin.chain[1].calculateHash();
-//
-// console.log('Is blockchain valid? ' + vipCoin.isChainValid());
-//console.log(JSON.stringify(vipCoin, null, 4));
