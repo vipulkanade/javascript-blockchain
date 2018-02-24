@@ -1,19 +1,27 @@
 const SHA256 = require('crypto-js/sha256');
 
+class Transactions {
+    constructor(fromAddress, toAddress, amount) {
+        this.fromAddress = fromAddress;
+        this.toAddress = toAddress;
+        this.amount = amount;
+    }
+}
+
+
 /**
   // Block class
   // Creating an empty Block constructor with following variables:
   // index        -> where the blockchain sits on the chain
   // timestamp    -> when it was created
-  // data         -> any type of data (e.g. details of transaction)
+  // transactions         -> any type of transactions (e.g. details of transaction)
   // previousHash -> string containing previous Hash of the block before (ensures integrity of Blockchain)
   // nonce        -> Random number
 **/
 class Block {
-    constructor(index, timestamp, data, previousHash = '') {
-        this.index = index;
+    constructor(timestamp, transactions, previousHash = '') {
         this.timestamp = timestamp;
-        this.data = data;
+        this.transactions = transactions;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
         this.nonce = 0;
@@ -24,7 +32,7 @@ class Block {
     // this will identify our block on blockchain,
     // using SHA256 for this, javascript does not support it by default will require 'crypto-js' library for this.
     calculateHash() {
-        return SHA256(this.index + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+        return SHA256(this.index + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
     }
 
     mineBlock(difficulty) {
@@ -40,21 +48,51 @@ class Block {
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 4;
+        this.difficulty = 2;
+        this.pendingTransactions = [];
+        this.miningReward = 100;
     }
 
     createGenesisBlock() {
-        return new Block(0, "01/01/2018", "Genesis Block", "0");
+        return new Block("01/01/2018", "Genesis Block", "0");
     }
 
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
     }
 
-    addBlock(newBlock) {
-        newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.mineBlock(this.difficulty);
-        this.chain.push(newBlock);
+    minePendingTrasactions(miningRewardAddress) {
+        let block = new Block(Date.now(), this.pendingTransactions);
+        block.mineBlock(this.difficulty);
+
+        console.log("Congratulations on successfully mining a Block!");
+        this.chain.push(block);
+
+        this.pendingTransactions = [
+            new Transactions(null, miningRewardAddress, this.miningReward)
+        ];
+    }
+
+    createTransactions(transaction) {
+        this.pendingTransactions.push(transaction);
+    }
+
+    getBalanceOfAddress(address) {
+        let balance = 0;
+
+        for(const block of this.chain) {
+            for(const trans of block.transactions) {
+                if(trans.fromAddress === address) {
+                    balance -= trans.amount;
+                }
+
+                if(trans.toAddress === address) {
+                    balance += trans.amount;
+                }
+            }
+        }
+
+        return balance;
     }
 
     isChainValid() {
@@ -76,16 +114,30 @@ class Blockchain {
 }
 
 let vipCoin = new Blockchain();
+vipCoin.createTransactions(new Transactions('address1', 'address2', 100));
+vipCoin.createTransactions(new Transactions('address2', 'address1', 50));
 
-console.log("Mining Block 1....");
-vipCoin.addBlock(new Block(1, "02/20/2018", {amount: 4}));
+console.log('\n Starting the miner....');
+vipCoin.minePendingTrasactions('batman-address');
 
-console.log("Mining Block 2....");
-vipCoin.addBlock(new Block(2, "02/22/2018", {amount: 10}));
+console.log('\nBalance of Batman is', vipCoin.getBalanceOfAddress('batman-address'));
+
+console.log('\n Starting the miner again....');
+vipCoin.minePendingTrasactions('batman-address');
+
+console.log('\nBalance of Batman is', vipCoin.getBalanceOfAddress('batman-address'));
+
+
+
+// console.log("Mining Block 1....");
+// vipCoin.addBlock(new Block(1, "02/20/2018", {amount: 4}));
+//
+// console.log("Mining Block 2....");
+// vipCoin.addBlock(new Block(2, "02/22/2018", {amount: 10}));
 
 // console.log('Is blockchain valid? ' + vipCoin.isChainValid());
 //
-// vipCoin.chain[1].data = { amount : 100 };
+// vipCoin.chain[1].transactions = { amount : 100 };
 // vipCoin.chain[1].hash = vipCoin.chain[1].calculateHash();
 //
 // console.log('Is blockchain valid? ' + vipCoin.isChainValid());
